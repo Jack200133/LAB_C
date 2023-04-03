@@ -188,7 +188,7 @@ def do_kleene_optional(exp_t):
     return start, end
 
 # Funcion crear las transiciones del AFN
-def arrange_transitions(state, states_done, symbol_table):
+def arrange_transitions(state, states_done, symbol_table,counter):
     global afn
     # Si el estado ya fue evaluado, se regresa
     if state in states_done:
@@ -207,14 +207,14 @@ def arrange_transitions(state, states_done, symbol_table):
             if ns not in symbol_table:
                 # Se le asigna un numero de estado
                 symbol_table[ns] = sorted(symbol_table.values())[-1] + 1
-                q_state = "S" + str(symbol_table[ns])
+                q_state = "S" + str(symbol_table[ns]+counter)
                 # Se agrega el estado al AFN
                 afn['states'].append(q_state)
             # Se agrega la transicion al AFN
-            afn['transition_function'].append(["S" + str(symbol_table[state]), symbol, "S" + str(symbol_table[ns])])
+            afn['transition_function'].append(["S" + str(symbol_table[state]+counter), symbol, "S" + str(symbol_table[ns]+counter)])
         # Se llama a la funcion para evaluar los estados siguientes
         for ns in state.next_state[symbol]:
-            arrange_transitions(ns, states_done, symbol_table)
+            arrange_transitions(ns, states_done, symbol_table,counter)
 
 # Funcion para agregar el estado final del AFN
 def final_st_afn():
@@ -232,17 +232,17 @@ def final_st_afn():
             afn["final_states"].append(st)
 
 # Funcion para inicializar el AFN
-def arrange_afn(fa):
+def arrange_afn(fa,counter):
     global afn
     afn['states'] = []
     afn['letters'] = []
     afn['transition_function'] = []
     afn['start_states'] = []
     afn['final_states'] = []
-    q_1 = "S" + str(1)
+    q_1 = "S" + str(counter+1)
     afn['states'].append(q_1)
-    arrange_transitions(fa[0], [], {fa[0] : 1})
-    afn["start_states"].append("S1")
+    arrange_transitions(fa[0], [], {fa[0] : 1},counter)
+    afn["start_states"].append(q_1)
     final_st_afn()
 
 # Funcion para Guardar el AFN en un archivo JSON
@@ -252,11 +252,11 @@ def output_afn():
         outjson.write(json.dumps(afn, indent = 4))
 
 # Funcion para generar el AFN
-def generate_afn(pr):
+def generate_afn(pr,counter =0):
     try:
         et = make_exp_tree(pr)
         fa = compute_regex(et)
-        arrange_afn(fa)
+        arrange_afn(fa,counter)
         output_afn()
         return afn
     except:

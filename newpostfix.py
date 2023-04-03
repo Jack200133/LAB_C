@@ -234,5 +234,3 @@ def verificacion_regex(regex):
     
     return errors_log
             
-                
-print(shunting_yard('(ab)*|(a)bb(a/*)(a)'))
