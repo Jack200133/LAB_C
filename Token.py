@@ -20,3 +20,4 @@ def empty(empty):
     else:
         return empty
     
+def Token()
