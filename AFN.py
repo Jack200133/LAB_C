@@ -6,7 +6,7 @@ CGREEM = '\33[92m'
 CBLUE = '\33[94m'
 # Tabla de símbolos operadores y AFN final
 non_symbols = ['|', '*', '.', '(', ')', '+', '?']
-afn = {}
+
 
 # Tipos de operadores para el árbol de expresiones
 class charType:
@@ -188,8 +188,7 @@ def do_kleene_optional(exp_t):
     return start, end
 
 # Funcion crear las transiciones del AFN
-def arrange_transitions(state, states_done, symbol_table,counter):
-    global afn
+def arrange_transitions(state, states_done, symbol_table,counter,afn):
     # Si el estado ya fue evaluado, se regresa
     if state in states_done:
         return
@@ -207,18 +206,17 @@ def arrange_transitions(state, states_done, symbol_table,counter):
             if ns not in symbol_table:
                 # Se le asigna un numero de estado
                 symbol_table[ns] = sorted(symbol_table.values())[-1] + 1
-                q_state = "S" + str(symbol_table[ns]+counter)
+                q_state = "S" + str(symbol_table[ns]+int(counter))
                 # Se agrega el estado al AFN
                 afn['states'].append(q_state)
             # Se agrega la transicion al AFN
-            afn['transition_function'].append(["S" + str(symbol_table[state]+counter), symbol, "S" + str(symbol_table[ns]+counter)])
+            afn['transition_function'].append(["S" + str(symbol_table[state]+int(counter)), symbol, "S" + str(symbol_table[ns]+int(counter))])
         # Se llama a la funcion para evaluar los estados siguientes
         for ns in state.next_state[symbol]:
-            arrange_transitions(ns, states_done, symbol_table,counter)
+            arrange_transitions(ns, states_done, symbol_table,int(counter),afn)
 
 # Funcion para agregar el estado final del AFN
-def final_st_afn():
-    global afn
+def final_st_afn(afn):
     # Se recorren los estados del AFN
     for st in afn["states"]:
         count = 0
@@ -232,33 +230,76 @@ def final_st_afn():
             afn["final_states"].append(st)
 
 # Funcion para inicializar el AFN
-def arrange_afn(fa,counter):
-    global afn
+def arrange_afn(fa,counter,afn):
     afn['states'] = []
     afn['letters'] = []
     afn['transition_function'] = []
     afn['start_states'] = []
     afn['final_states'] = []
-    q_1 = "S" + str(counter+1)
+    q_1 = "S" + str(int(counter)+1)
     afn['states'].append(q_1)
-    arrange_transitions(fa[0], [], {fa[0] : 1},counter)
+    arrange_transitions(fa[0], [], {fa[0] : 1},counter,afn)
     afn["start_states"].append(q_1)
-    final_st_afn()
+    final_st_afn(afn)
 
 # Funcion para Guardar el AFN en un archivo JSON
-def output_afn():
-    global afn
+def output_afn(afn):
     with open('AFN.json', 'w') as outjson:
         outjson.write(json.dumps(afn, indent = 4))
 
 # Funcion para generar el AFN
 def generate_afn(pr,counter =0):
-    try:
-        et = make_exp_tree(pr)
-        fa = compute_regex(et)
-        arrange_afn(fa,counter)
-        output_afn()
-        return afn
-    except:
-        print(CRED,'Expresión mal formada: token no reconocido',CEND,CYELLOW,pr,CEND)
-        raise ValueError('Expresión mal formada: token no reconocido')
+    afn = {}
+    et = make_exp_tree(pr)
+    fa = compute_regex(et)
+    arrange_afn(fa,counter,afn)
+    output_afn(afn)
+    return afn
+
+
+def add_new_initial_state(automaton, initial_states):
+    new_automaton = automaton.copy()
+
+    # Agregar 's0' a la lista de estados
+    new_automaton['states'].append('s0')
+
+    # Establecer el nuevo estado inicial 's0'
+    new_automaton['start_states'] = ['s0']
+
+    # Agregar transiciones epsilon desde 's0' a los estados iniciales dados
+    for state in initial_states:
+        new_automaton['transition_function'].append(['s0', 'ε', state])
+
+    return new_automaton
+
+def merge_automata(automaton1, automaton2):
+    new_automaton = {
+        "states": [],
+        "letters": [],
+        "transition_function": [],
+        "start_states": [],
+        "final_states": [],
+    }
+
+    # Unir estados
+    new_automaton["states"] = automaton1["states"] + automaton2["states"]
+
+    # Unir alfabeto (letras) sin duplicados
+    new_automaton["letters"] = list(set(automaton1["letters"] + automaton2["letters"]))
+
+    # Unir funciones de transición
+    new_automaton["transition_function"] = (
+        automaton1["transition_function"] + automaton2["transition_function"]
+    )
+
+    # Unir estados iniciales
+    new_automaton["start_states"] = (
+        automaton1["start_states"] + automaton2["start_states"]
+    )
+
+    # Unir estados finales
+    new_automaton["final_states"] = (
+        automaton1["final_states"] + automaton2["final_states"]
+    )
+
+    return new_automaton

@@ -1,0 +1,29 @@
+// AFN
+digraph {
+	rankdir=LR
+	node [shape=circle]
+	"" [style=invisible]
+	S27
+	S28
+	S29
+	S30
+	S31
+	S32
+	S33
+	S34
+	S35
+	S36
+	"" -> S27
+	S27 -> S28 [label="ε"]
+	S27 -> S29 [label="ε"]
+	S28 -> S30 [label="ε"]
+	S28 -> S31 [label="ε"]
+	S30 -> S32 [label="("]
+	S32 -> S33 [label="ε"]
+	S33 -> S34 [label="ε"]
+	S31 -> S35 [label=0]
+	S35 -> S33 [label="ε"]
+	S29 -> S36 [label=1]
+	S36 -> S34 [label="ε"]
+	S34 [shape=doublecircle]
+}

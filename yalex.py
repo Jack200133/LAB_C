@@ -2,7 +2,7 @@ import re
 
 def format_yalex_content(yalex_content):
     file_content = yalex_content
-    header_result, file_content = build_header(file_content)
+    header_result, file_content = build_header_and_trailer(file_content)
     file_content = clean_comments(file_content)
     file_content = replace_quotation_mark(file_content)
     regex = build_regex(file_content)
@@ -19,7 +19,8 @@ def clean_comments(file_content):
     file_content = re.sub(patron, '', file_content)
     return file_content
 
-def build_regex(file_content):
+def build_regex(file_content,inicio):
+    ErrorStack = []
     patron = re.compile(r'\{.*?\}', re.DOTALL)
     content = re.sub(patron, '', file_content)
     content = content.split("\n")
@@ -27,12 +28,36 @@ def build_regex(file_content):
     compound_pattern = r"\[(\w)\s*-\s*(\w)\s*(\w)\s*-\s*(\w)\]"
     simple_regex_pattern = r"^let\s+\w+\s+=\s+(.*?)$"
     regex = {}
-    for line in content:
+
+    # Verificar llaves y paréntesis desbalanceados
+    open_brackets = ['{', '(']
+    close_brackets = ['}', ')']
+    stack = []
+
+    for line_num, line in enumerate(content, start=1):
+        for char in line:
+            if char in open_brackets:
+                stack.append((char, line_num))
+            elif char in close_brackets:
+                if not stack or stack[-1][0] != open_brackets[close_brackets.index(char)]:
+                    ErrorStack.append(f"Llaves o paréntesis desbalanceados en la línea {line_num+inicio}: {line}")
+                    break
+                else:
+                    stack.pop()
+
         line = line.strip()
         if line:
             if re.match(simple_regex_pattern, line):
-                regex = add_common_regex(line, regex,simple_pattern, compound_pattern)
-    return regex
+                regex = add_common_regex(line, regex, simple_pattern, compound_pattern)
+            elif line.startswith("let"):
+                ErrorStack.append(f"Expresión regular inválida en la línea {line_num+inicio}: {line}")
+
+    if stack:
+        for bracket, line_num in stack:
+            ErrorStack.append(f"Llave o paréntesis '{bracket}' sin cerrar en la línea {line_num+inicio}")
+
+    return regex, ErrorStack
+
 
 def build_tokens(file_content, regex):
     content = file_content.split('rule tokens =')
@@ -44,11 +69,14 @@ def build_tokens(file_content, regex):
     content = replace_existing_regex(content, regex)
     return content
 
-def build_header(file_content):
+def build_header_and_trailer(file_content):
     content = file_content.split('\n')
     header_result = ''
+    trailer_result = ''
+    i = 0
+
+    # Build header
     if check_header(content):
-        i = 0
         finished = False
         while not finished:
             line = content[i].strip()
@@ -61,7 +89,43 @@ def build_header(file_content):
                     break
             header_result += '\n'
             i += 1
-    return header_result, file_content
+
+    file_content = '\n'.join(content[i:])
+
+    # Build trailer
+    content = file_content.split('\n')
+    j = len(content) - 1
+    if check_trailer(content):
+        finished = False
+        while not finished:
+            line = content[j].strip()
+            for element in line:
+                if element != '{' and element != '}':
+                    trailer_result = element + trailer_result
+                if element == '{':
+                    finished = True
+                    trailer_result = trailer_result.strip()
+                    break
+            trailer_result = '\n' + trailer_result
+            j -= 1
+
+    file_content = '\n'.join(content[:j+1])
+    trailer_result = trailer_result[::-1]
+    return header_result, trailer_result, file_content, i
+
+
+def check_trailer(content):
+    has_header = True
+    j = len(content) - 1
+    while has_header:
+        line = content[j].strip()
+        if line:
+            if 'return' in line or '|' in line:
+                return False
+            if line == "}" or "}" in line:
+                return True
+        j -= 1
+
 
 def check_header(content):
     has_header = True
@@ -249,6 +313,8 @@ def build_common_regex(line, regex):
                 element = element.replace('+', '\+')
                 element = element.replace('.', '\.')
                 element = element.replace('*', '\*')
+                element = element.replace('(', '\(')
+                element = element.replace(')', '\)')
                 body += element
         elif not check_operators(element) and len(element) > 1:
             replacement = regex[element]

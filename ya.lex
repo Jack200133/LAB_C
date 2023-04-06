@@ -1,19 +1,26 @@
-{ header }
-// asignador de una expresion regular
-(* let ident = regexp … *)
-let id = (az | AZ)(az | AZ | 09 | _) *
-    let token1 = 'a' +
-        let token2 = 'b' +
+{(* Lexer para Gramática No. 2 - Expresiones aritméticas extendidas *)
+}
+(* Introducir cualquier header aqui *)
+
+let delim = ["\s\t\n"]
+let ws = delim+
+let letter = ['A'-'C''a'-'b']
+let digit = ['0'-'2']
+let digits = digit+
+let id = letter(letter|digit)*'()'letter(letter|digit)*
 
 
+rule tokens = 
+    ws        { return WHITESPACE }               (* Cambie por una acción válida, que devuelva el token *)
+  | id        { return ID }
+  | number    { return NUMBER }
+  | '+'       { return PLUS }
+  | '-'       { return MINUS }
+  | '*'       { return TIMES }
+  | '/'       { return DIV }
+  | '('       { return LPAREN }
+  | ')'       { return RPAREN }
 
-            [refill { refill- handler }]
-rule entrypoint[arg1… argn] =
-    // 
-  parse regexp { action }
-      | …
-      | regexp { action }
-and entrypoint[arg1… argn] =
-parse …
-and …
-{ trailer }
+
+  (* Introducir cualquier trailer aqui *)
+  

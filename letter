@@ -1,0 +1,47 @@
+// AFN
+digraph {
+	rankdir=LR
+	node [shape=circle]
+	"" [style=invisible]
+	S5
+	S6
+	S7
+	S8
+	S9
+	S10
+	S11
+	S12
+	S13
+	S14
+	S15
+	S16
+	S17
+	S18
+	S19
+	S20
+	S21
+	S22
+	"" -> S5
+	S5 -> S6 [label="ε"]
+	S5 -> S7 [label="ε"]
+	S6 -> S8 [label="ε"]
+	S6 -> S9 [label="ε"]
+	S8 -> S10 [label="ε"]
+	S8 -> S11 [label="ε"]
+	S10 -> S12 [label="ε"]
+	S10 -> S13 [label="ε"]
+	S12 -> S14 [label="("]
+	S14 -> S15 [label="ε"]
+	S15 -> S16 [label="ε"]
+	S16 -> S17 [label="ε"]
+	S17 -> S18 [label="ε"]
+	S13 -> S19 [label=A]
+	S19 -> S15 [label="ε"]
+	S11 -> S20 [label=B]
+	S20 -> S16 [label="ε"]
+	S9 -> S21 [label=C]
+	S21 -> S17 [label="ε"]
+	S7 -> S22 [label=a]
+	S22 -> S18 [label="ε"]
+	S18 [shape=doublecircle]
+}

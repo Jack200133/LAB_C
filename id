@@ -1,0 +1,47 @@
+// AFN
+digraph {
+	rankdir=LR
+	node [shape=circle]
+	"" [style=invisible]
+	S35
+	S36
+	S37
+	S38
+	S39
+	S40
+	S41
+	S42
+	S43
+	S44
+	S45
+	S46
+	S47
+	S48
+	S49
+	S50
+	S51
+	S52
+	"" -> S35
+	S35 -> S36 [label="ε"]
+	S35 -> S37 [label="ε"]
+	S36 -> S38 [label="ε"]
+	S36 -> S39 [label="ε"]
+	S38 -> S40 [label="ε"]
+	S38 -> S41 [label="ε"]
+	S40 -> S42 [label="ε"]
+	S40 -> S43 [label="ε"]
+	S42 -> S44 [label="("]
+	S44 -> S45 [label="ε"]
+	S45 -> S46 [label="ε"]
+	S46 -> S47 [label="ε"]
+	S47 -> S48 [label="ε"]
+	S43 -> S49 [label=A]
+	S49 -> S45 [label="ε"]
+	S41 -> S50 [label=B]
+	S50 -> S46 [label="ε"]
+	S39 -> S51 [label=C]
+	S51 -> S47 [label="ε"]
+	S37 -> S52 [label=a]
+	S52 -> S48 [label="ε"]
+	S48 [shape=doublecircle]
+}

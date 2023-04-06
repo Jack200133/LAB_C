@@ -1,0 +1,11 @@
+// AFN
+digraph {
+	rankdir=LR
+	node [shape=circle]
+	"" [style=invisible]
+	S1
+	S2
+	"" -> S1
+	S1 -> S2 [label="["]
+	S2 [shape=doublecircle]
+}
