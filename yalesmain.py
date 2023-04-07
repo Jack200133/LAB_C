@@ -27,8 +27,8 @@ file_content = yalex_content
 header_result, trailer_result, file_content,i = build_header_and_trailer(file_content)
 file_content = clean_comments(file_content)
 file_content = replace_quotation_mark(file_content)
-regex,errorStack = build_regex(file_content,i)
-tokens = build_tokens(file_content, regex)
+regex,errorStack,fin = build_regex(file_content,i)
+tokens,errorStack = build_tokens(file_content, regex,errorStack,fin+1)
 
 if errorStack:
     print("Error stack:")

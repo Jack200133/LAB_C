@@ -48,26 +48,29 @@ def build_regex(file_content,inicio):
         line = line.strip()
         if line:
             if re.match(simple_regex_pattern, line):
-                regex = add_common_regex(line, regex, simple_pattern, compound_pattern)
+                regex,ErrorStack = add_common_regex(line, regex, simple_pattern, compound_pattern,ErrorStack)
             elif line.startswith("let"):
                 ErrorStack.append(f"Expresión regular inválida en la línea {line_num+inicio}: {line}")
+            elif line.startswith("rule tokens"):
+                break
 
     if stack:
         for bracket, line_num in stack:
             ErrorStack.append(f"Llave o paréntesis '{bracket}' sin cerrar en la línea {line_num+inicio}")
 
-    return regex, ErrorStack
+    fin = line_num+inicio
+    return regex, ErrorStack,fin
 
 
-def build_tokens(file_content, regex):
+def build_tokens(file_content, regex,errorStack,inicio):
     content = file_content.split('rule tokens =')
     content = trim_quotation_marks(content[1])
     content = content.strip().split('|')
     content = replace_delimiters(content)
-    content = convert_regexes_to_tuples(content)
+    content,errorStack = convert_regexes_to_tuples(content,regex,errorStack,inicio)
     content = add_meta_character_token(content)
     content = replace_existing_regex(content, regex)
-    return content
+    return content,errorStack
 
 def build_header_and_trailer(file_content):
     content = file_content.split('\n')
@@ -159,21 +162,24 @@ def replace_existing_regex(expressions, regex):
         new_list.append(element)
     return new_list
 
-def convert_regexes_to_tuples(expressions):
+def convert_regexes_to_tuples(expressions,regex,errorStack,inicio):
+    simple_pattern = r"\[(\w)\s*-\s*(\w)\]"
+    compound_pattern = r"\[(\w)\s*-\s*(\w)\s*(\w)\s*-\s*(\w)\]"
     new_list = []
     for element in expressions:
-        splitted = element.split('\t', maxsplit=1)
+        line_number = inicio + expressions.index(element)
+        splitted = element.split(' ', maxsplit=1)
         if len(splitted) >= 2:
             first_part = splitted[0]
-            if first_part not in regex:
-                first_part = common_regex(first_part.split(" "))
+            if first_part not in regex.keys():
+                first_part,errorStack = common_regex(first_part.split(" "),regex, simple_pattern, compound_pattern,errorStack,line_number)
             second_part = splitted[1].replace('\t', '')
             second_part = second_part.replace('{' , '')
             second_part = second_part.replace('}', '')
             second_part = second_part.strip()
             element = [first_part, second_part]
             new_list.append(element)
-    return new_list
+    return new_list,errorStack
 
 
 def add_meta_character_token(expressions):
@@ -283,24 +289,24 @@ def get_range_of_numbers(initial, final):
     return result
 
 
-def common_regex(line, regex, simple_pattern, compound_pattern):
-    body = build_common_regex(line, regex)
+def common_regex(line, regex, simple_pattern, compound_pattern, errorStack,line_number=0):
+    body,erroStack = build_common_regex(line, regex,errorStack,line_number)
     body = body.replace('ε', ' ')
     body = replace_common_patterns(body, simple_pattern, compound_pattern)
     body = body.strip()
-    return body
+    return body,erroStack
 
-def add_common_regex(line, regex, simple_pattern, compound_pattern):
+def add_common_regex(line, regex, simple_pattern, compound_pattern,errorStack):
     line = space_operators(line)
     line = trim_quotation_marks(line)
     line = line.replace('" "', '"ε"')
     line = line.replace("' '", "'ε'")
     line = line.split(" ")
-    body = common_regex(line[3:], regex, simple_pattern, compound_pattern)
+    body,errorStack = common_regex(line[3:], regex, simple_pattern, compound_pattern,errorStack)
     regex[line[1]] = body
-    return regex
+    return regex,errorStack
 
-def build_common_regex(line, regex):
+def build_common_regex(line, regex,errorStack,line_number=0):
     body = ''
     for i in range(len(line)):
         element = line[i]
@@ -317,11 +323,14 @@ def build_common_regex(line, regex):
                 element = element.replace(')', '\)')
                 body += element
         elif not check_operators(element) and len(element) > 1:
-            replacement = regex[element]
-            body += replacement
+            if element in regex:
+                replacement = regex[element]
+                body += replacement
+            else:
+                errorStack.append(f"Error: {element} no se encuentra definido en la linea {line_number}: {line}")
         else:
             body += element
-    return body
+    return body, errorStack
 
 def check_operators(element):
     operators = '*+|?'
