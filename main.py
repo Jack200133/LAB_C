@@ -11,9 +11,10 @@ CYELLOW = '\33[93m'
 CGREEM = '\33[92m'
 CBLUE = '\33[94m'
 
-reg = "(ab)*|(a)bb(a/*)(a)"
-                
-
+reg = "(D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|a|b|c)((D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|a|b|c)|(3|4|5|6|7|8))*"
+postfix = shunting_yard(reg)
+print('\33[93mPOSTFIX: ',postfix,'\33[94m')
+reg = "(D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|a|b|c)\.((D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|a|b|c)|(3|4|5|6|7|8))*"
 postfix = shunting_yard(reg)
 print('\33[93mPOSTFIX: ',postfix,'\33[94m')
 afn = generate_afn(postfix,1)

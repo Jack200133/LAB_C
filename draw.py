@@ -1,7 +1,7 @@
 from graphviz import Digraph
+import os
 
-
-def draw_afn(states, letters, transition_function, start_states, final_states, filename='AFN'):
+def draw_afn(states, letters, transition_function, start_states, final_states, filename='AFN',output_folder='outputs'):
     # Se crea el grafo
     dot = Digraph(comment='AFN')
     dot.attr(rankdir='LR')
@@ -23,5 +23,8 @@ def draw_afn(states, letters, transition_function, start_states, final_states, f
         dot.node(final_state, shape='doublecircle')
     # Se muestra el grafo
     #dot.view(filename)
-    dot.render(filename, format='png', view=True)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    output_path = os.path.join(output_folder, filename)
+    dot.render(output_path, format='png', view=True)
     return dot

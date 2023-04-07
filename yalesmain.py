@@ -2,6 +2,7 @@ import re
 from yalex import *
 from AFN import generate_afn,add_new_initial_state,merge_automata
 from draw import draw_afn
+from newpostfix import shunting_yard
 
 CEND = '\33[0m'
 CRED = '\33[91m'
@@ -55,7 +56,10 @@ regexAFN = {}
 for key, value in regex.items():
     # Generar AFN para cada regex
     afn = {}
-    afn = generate_afn(value,i)
+    reg = shunting_yard(value)
+    print('\33[93m',key,'REGEX: ',value,'\33[94m')
+    print('\33[93m',key,'POSTFIX: ',reg,'\33[94m')
+    afn = generate_afn(reg,i)
     i =afn['final_states'][0][1:]
     regexAFN[key] = afn
 
@@ -67,10 +71,6 @@ for key, value in regex.items():
     for inicial, simbolo, final in afn['transition_function']:
         print(CGREEM,inicial,CYELLOW,'==',CBLUE,F"({simbolo})",CYELLOW,'==>',CGREEM,final,CRED)
     draw_afn(afn['states'], afn['letters'], afn['transition_function'], afn['start_states'], afn['final_states'],key)
-print(regexAFN,'\n\n')
-
-
-
 automata_list = list(regexAFN.values())
 
 # Unir todos los autómatas en la lista
@@ -83,7 +83,6 @@ initial_states = [automaton["start_states"][0] for automaton in automata_list]
 final_automaton = add_new_initial_state(merged_automaton, initial_states)
 
 # Imprimir el autómata resultante
-print(final_automaton)
 print('Estado inicial: ',CGREEM,final_automaton['start_states'],CRED)
 print('Estado de aceptacion: ',CGREEM,final_automaton['final_states'],CRED)
 print('Estados: ',CGREEM,final_automaton['states'],CRED)

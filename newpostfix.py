@@ -163,6 +163,7 @@ def metahelper(regex):
     while i < len(regex):
         element = regex[i]
         if element == '\\' and i+1 < len(regex) and regex[i+1] != '\\':
+            newRegex.append(regex[i])
             newRegex.append(regex[i+1])
             i+=1
         else:

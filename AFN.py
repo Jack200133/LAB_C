@@ -31,14 +31,25 @@ class ExpressionTree():
         self.left = None
         self.right = None
 
+# Función para verificar si un caracter es un metacarácter
+def is_metachar(c):
+    metachars = ['\\']
+    return c in metachars
+
 # Creacion del arbol de expresiones
 def make_exp_tree(regexp):
     # Pila de operadores y cola de salida
     stack = []
+    i=0
     # Para cada token en la expresión
-    for c in regexp:
+    while i < len(regexp):
+        c = regexp[i]
+        if is_metachar(c):
+            i += 1
+            c = regexp[i]
+            stack.append(ExpressionTree(charType.SYMBOL, c))
         # Si el token es una union
-        if c == "|":
+        elif c == "|":
             #  Se crea un nodo con el operador OR
             z = ExpressionTree(charType.UNION,c)
 
@@ -79,6 +90,7 @@ def make_exp_tree(regexp):
         else:
             # Si no es un operador, se agrega a la pila
             stack.append(ExpressionTree(charType.SYMBOL, c))
+        i += 1
     return stack[0]
 
 # Funcion para generar el AFN
@@ -244,7 +256,7 @@ def arrange_afn(fa,counter,afn):
 
 # Funcion para Guardar el AFN en un archivo JSON
 def output_afn(afn):
-    with open('AFN.json', 'w') as outjson:
+    with open('outputs/AFN.json', 'w') as outjson:
         outjson.write(json.dumps(afn, indent = 4))
 
 # Funcion para generar el AFN
@@ -261,14 +273,14 @@ def add_new_initial_state(automaton, initial_states):
     new_automaton = automaton.copy()
 
     # Agregar 's0' a la lista de estados
-    new_automaton['states'].append('s0')
+    new_automaton['states'].append('S0')
 
-    # Establecer el nuevo estado inicial 's0'
-    new_automaton['start_states'] = ['s0']
+    # Establecer el nuevo estado inicial 'S0'
+    new_automaton['start_states'] = ['S0']
 
-    # Agregar transiciones epsilon desde 's0' a los estados iniciales dados
+    # Agregar transiciones epsilon desde 'S0' a los estados iniciales dados
     for state in initial_states:
-        new_automaton['transition_function'].append(['s0', 'ε', state])
+        new_automaton['transition_function'].append(['S0', 'ε', state])
 
     return new_automaton
 
