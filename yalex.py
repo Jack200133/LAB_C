@@ -81,11 +81,15 @@ def build_header_and_trailer(file_content):
     # Build header
     if check_header(content):
         finished = False
+        started = False
         while not finished:
             line = content[i].strip()
             for element in line:
+                if element == '{':
+                    started = True
                 if element != '{' and element != '}':
-                    header_result += element
+                    if started:
+                        header_result += element
                 if element == '}':
                     finished = True
                     header_result = header_result.strip()
@@ -96,24 +100,38 @@ def build_header_and_trailer(file_content):
     file_content = '\n'.join(content[i:])
 
     # Build trailer
-    content = file_content.split('\n')
     j = len(content) - 1
     if check_trailer(content):
         finished = False
-        while not finished:
+        while not finished and j >= 0:
             line = content[j].strip()
+            temp_line = ''
             for element in line:
                 if element != '{' and element != '}':
-                    trailer_result = element + trailer_result
+                    temp_line = element + temp_line
                 if element == '{':
                     finished = True
-                    trailer_result = trailer_result.strip()
-                    break
-            trailer_result = '\n' + trailer_result
+                    temp_line = temp_line.strip()
+                    
+            trailer_result = temp_line + trailer_result
+            if not finished:
+                trailer_result = '\n' + trailer_result
             j -= 1
+        real_trailer = ''
+        for lines in range(j, len(content)):
+            line = content[lines].strip()
+            for element in line:
+                if element != '{' and element != '}':
+                    real_trailer += element
+                if element == '}':
+                    real_trailer = real_trailer.strip()
+                    break
+            real_trailer += '\n'
+        trailer_result = real_trailer
+        
+    
 
     file_content = '\n'.join(content[:j+1])
-    trailer_result = trailer_result[::-1]
     return header_result, trailer_result, file_content, i
 
 

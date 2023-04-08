@@ -10,7 +10,7 @@ CYELLOW = '\33[93m'
 CGREEM = '\33[92m'
 CBLUE = '\33[94m'
 
-with open('ya.lex', 'r') as f:
+with open('yaerrors.lex', 'r') as f:
     # Leer todas las líneas del archivo
     yalex_content = f.read()
 
@@ -31,21 +31,22 @@ regex,errorStack,fin = build_regex(file_content,i)
 tokens,errorStack = build_tokens(file_content, regex,errorStack,fin+1)
 
 if errorStack:
-    print("Error stack:")
+    print(CRED,"Error stack:")
     for error in errorStack:
         print(error)
+    print(CEND)
     exit()
 
 # Imprimir resultados
-print("Header:")
+print(CBLUE,"Header:",CYELLOW)
 print(header_result)
-print("\nTokens:")
+print("\n",CBLUE,"Tokens:",CYELLOW)
 for token in tokens:
     print(token)
-print("\nRegex:")
+print("\n",CBLUE,"Regex:",CGREEM)
 for key, value in regex.items():
     print(key, ":", value)
-print("\nTrailer:")
+print("\n",CBLUE,"Trailer:",CYELLOW)
 print(trailer_result)
 
 

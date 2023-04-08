@@ -1,26 +1,18 @@
-{(* Lexer para Gramática No. 2 - Expresiones aritméticas extendidas *)
-}
-(* Introducir cualquier header aqui *)
+(* Lexer para Gramática No. 1 - Expresiones aritméticas simples para variables *)
+{(* Introducir cualquier header aqui *)}
 
-let delim = ["\s\t\n"]
-let ws dwad = delim+
-let letter = ['D'-'R''a'-'c']
-let digit = ['3'-'8']
-let digits = digit+
-let id = letter'.'(letter|digit)*
-}
-}
+let delim = [' ''\t''\n']
+let ws = delim+
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
+let id = letter(letter|digit)*
+
 rule tokens = 
-    ws        { return WHITESPACE }               (* Cambie por una acción válida, que devuelva el token *)
-  | id        { return ID }
-  | number    { return NUMBER }
+    ws
+  | id        { return ID }               (* Cambie por una acción válida, que devuelva el token *)
   | '+'       { return PLUS }
-  | '-'       { return MINUS }
   | '*'       { return TIMES }
-  | '/'       { return DIV }
   | '('       { return LPAREN }
   | ')'       { return RPAREN }
 
-
-  (* Introducir cualquier trailer aqui *)
-  
+(* Introducir cualquier trailer aqui *)
